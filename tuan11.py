@@ -5,7 +5,7 @@ import threading
 from collections import deque
 import random
 import math
-
+import itertools
 # -------------------------------------
 # HÀM HỖ TRỢ CHO 8-PUZZLE
 # -------------------------------------
@@ -301,6 +301,72 @@ def beam_search_solve(start_state, goal_state, beam_width=3):
         new_beam.sort(key=lambda x: manhattan_distance(x[0]))
         beam = new_beam[:beam_width]
     return None
+
+# -------------------------------------
+# THUẬT TOÁN DI TRUYỀN (Genetic Algorithm) cho 8-Puzzle
+# -------------------------------------
+def genetic_algorithm_solve(start_state, goal_state,
+                            population_size=200,
+                            chromosome_length=30,
+                            max_generations=1000,
+                            mutation_rate=0.1):
+    moves_list = list(MOVES.keys())
+
+    def apply_moves(state, moves_seq):
+        current_state = [row[:] for row in state]
+        for move in moves_seq:
+            blank_x, blank_y = find_blank(current_state)
+            dx, dy = MOVES[move]
+            new_x, new_y = blank_x + dx, blank_y + dy
+            if 0 <= new_x < 3 and 0 <= new_y < 3:
+                current_state[blank_x][blank_y], current_state[new_x][new_y] = current_state[new_x][new_y], current_state[blank_x][blank_y]
+        return current_state
+
+    def fitness(moves_seq):
+        new_state = apply_moves(start_state, moves_seq)
+        return manhattan_distance(new_state)
+
+    population = []
+    for _ in range(population_size):
+        chromosome = [random.choice(moves_list) for _ in range(chromosome_length)]
+        population.append(chromosome)
+
+    generation = 0
+    while generation < max_generations:
+        for chromosome in population:
+            if fitness(chromosome) == 0:
+                solution = []
+                current_state = [row[:] for row in start_state]
+                for move in chromosome:
+                    for new_state, move_candidate in generate_states(current_state):
+                        if move_candidate == move:
+                            current_state = new_state
+                            solution.append(move)
+                            break
+                    if current_state == goal_state:
+                        return solution
+        fitness_values = [fitness(chromosome) for chromosome in population]
+        new_population = []
+
+        def tournament_selection(k=3):
+            selected = random.sample(population, k)
+            selected.sort(key=lambda chromo: fitness(chromo))
+            return selected[0]
+
+        while len(new_population) < population_size:
+            parent1 = tournament_selection()
+            parent2 = tournament_selection()
+            point = random.randint(1, chromosome_length - 1)
+            child = parent1[:point] + parent2[point:]
+            for i in range(chromosome_length):
+                if random.random() < mutation_rate:
+                    child[i] = random.choice(moves_list)
+            new_population.append(child)
+        population = new_population
+        generation += 1
+    return None
+
+
 def and_or_solve(start_state, goal_state, limit=50):
     """
     OR-SEARCH có cycle‑check và cắt theo độ sâu.
@@ -327,6 +393,128 @@ def and_or_solve(start_state, goal_state, limit=50):
         return None
 
     return and_or(start_state, set(), 0)
+
+
+def sensorless_bfs_solve(goal_state):
+    """
+    Tìm kế hoạch hành động để chắc chắn đạt goal_state 
+    trong môi trường không cảm biến (sensorless).
+    
+    Giả sử belief state khởi tạo = ALL_POSSIBLE_STATES  (toàn bộ hoán vị 8-puzzle).
+    Ở mỗi bước, ta áp dụng 1 hành động (UP, DOWN, LEFT, RIGHT) lên toàn bộ 
+    các trạng thái trong belief, hợp lại thành belief mới.
+    
+    Kết thúc khi: 
+      - Mọi trạng thái trong belief đều == goal_state 
+        => ta chắc chắn đã ở goal_state.
+      - Hoặc không thể thu hẹp belief state nữa => thất bại.
+    """
+    from collections import deque
+    
+    # Tạo ra tất cả hoán vị hợp lệ của 8-Puzzle
+    all_states = generate_all_possible_states()
+    # Belief state ban đầu: tất cả
+    start_belief = frozenset(tuple(map(tuple, s)) for s in all_states)
+    
+    # Hàng đợi BFS: lưu (belief, path)
+    queue = deque()
+    queue.append((start_belief, []))
+    visited = set([start_belief])
+    
+    while queue:
+        current_belief, path = queue.popleft()
+        
+        # Kiểm tra xem tất cả state trong belief có == goal?
+        # => nghĩa là belief chỉ còn 1 phần tử, và phần tử đó = goal_state
+        # Hoặc => Tất cả đều là goal (nếu ta muốn). Ở đây, ta xét trường hợp 
+        # "chỉ còn 1 state = goal".
+        if len(current_belief) == 1:
+            single_state = list(current_belief)[0]
+            if single_state == tuple(map(tuple, goal_state)):
+                return path  # Kế hoạch thành công
+        
+        # Sinh các belief state tiếp theo
+        for action in MOVES.keys():
+            next_belief = set()
+            for st_tuple in current_belief:
+                # convert st_tuple -> list of list
+                st_list = [list(row) for row in st_tuple]
+                # sinh state(s) khi áp action
+                new_st = apply_action_sensorless(st_list, action)
+                if new_st is not None:
+                    # new_st là list => đổi thành tuple
+                    next_belief.add(tuple(map(tuple, new_st)))
+            
+            if not next_belief:
+                continue  # action này không khả thi cho belief này
+            
+            next_belief = frozenset(next_belief)
+            if next_belief not in visited:
+                visited.add(next_belief)
+                queue.append((next_belief, path + [action]))
+    
+    return None  # Không tìm thấy kế hoạch
+
+def apply_action_sensorless(state, move):
+    """
+    Applies action 'move' to state if valid.
+    Returns new state list-of-lists, or None if move is invalid.
+    """
+    blank_x, blank_y = find_blank(state)
+    dx, dy = MOVES[move]
+    new_x, new_y = blank_x + dx, blank_y + dy
+    if 0 <= new_x < 3 and 0 <= new_y < 3:
+        new_state = [row[:] for row in state]
+        new_state[blank_x][blank_y], new_state[new_x][new_y] = new_state[new_x][new_y], new_state[blank_x][blank_y]
+        return new_state
+    else:
+        return None 
+
+def generate_all_possible_states():
+    all_states = []
+    for perm in itertools.permutations(range(9)):
+        # Chuyển tuple 9 phần tử -> mảng 3x3
+        mat = [list(perm[0:3]), list(perm[3:6]), list(perm[6:9])]
+        # (Tuỳ chọn) kiểm tra puzzle solvable => nếu yes, thêm vào
+        # if is_solvable(mat):
+        all_states.append(mat)
+    return all_states
+def sensorless_bfs_solve_wrapper(goal_state):
+    # goal_state là list of list
+    return sensorless_bfs_solve(goal_state)
+
+# -------------------------------------
+# GENERAL PROBLEM SOLVER (using defined components)
+# -------------------------------------
+def general_problem_solver(start_state, goal_state):
+    """
+    Defines the 8-puzzle problem using standard components
+    (actions, transition, goal_test, step_cost) and then
+    calls an existing search algorithm (currently DFS) to solve it.
+    """
+    # 1. Define Actions function
+    def actions(s):
+        # Returns a list of possible move strings ('UP', 'DOWN', ...) from state s
+        return [move for (_, move) in generate_states(s)]
+
+    # 2. Define Transition Model function
+    def transition(s, a):
+        # Returns the state resulting from taking action a in state s
+        # Note: generate_states returns [(new_state, move), ...]
+        for new_s, move in generate_states(s):
+            if move == a:
+                return new_s
+        return None # Should not happen if 'a' came from actions(s)
+
+    # 3. Define Goal Test function
+    def goal_test(s):
+        return s == goal_state
+
+    # 4. Define Step Cost function
+    def step_cost(s, a, s2):
+        # Cost of taking action a from state s to reach state s2
+        return 1 # Uniform cost for 8-puzzle moves
+    return dfs_solve(start_state, goal_state) 
 
 # -------------------------------------
 # GIAO DIỆN CHÍNH (Tkinter)
@@ -406,7 +594,8 @@ class PuzzleApp:
         algo_options = ["BFS", "UCS", "Greedy", "A*", "DFS", "IDS", "IDA*", 
                 "Simple Hill Climbing", "Steepest Hill Climbing", 
                 "Stochastic Hill Climbing", "Simulated Annealing", "Beam Search",
-                "AND-OR Graph Search"]
+                "Genetic Algorithm", "AND-OR Graph Search", "Sensorless BFS",
+                "General Problem Solver"]
         algo_menu = tk.OptionMenu(algo_frame, self.algo_var, *algo_options)
         algo_menu.config(font=('Arial', 12), bg='#FFB6C1', fg='black')
         algo_menu.pack(padx=5, pady=5, fill=tk.X)
@@ -541,8 +730,15 @@ class PuzzleApp:
                 self.solution = simulated_annealing_solve(self.initial_state, self.goal_state)
             elif algo == "Beam Search":
                 self.solution = beam_search_solve(self.initial_state, self.goal_state)
+            elif algo == "Genetic Algorithm":
+                self.solution = genetic_algorithm_solve(self.initial_state, self.goal_state)
             elif algo == "AND-OR Graph Search":
                 self.solution = and_or_solve(self.initial_state, self.goal_state, limit=100)
+            elif algo == "Sensorless BFS":
+                self.solution = sensorless_bfs_solve_wrapper(self.goal_state)
+            elif algo == "General Problem Solver":
+                self.solution = general_problem_solver(self.initial_state, self.goal_state)
+
 
         t = threading.Thread(target=run_solver)
         t.start()
@@ -564,7 +760,15 @@ class PuzzleApp:
     # ANIMATION
     # ----------------------------
     def animate_solution(self, solution):
+        # Nếu dùng Sensorless BFS → bắt đầu từ goal_state
+        if self.algo_var.get() == "Sensorless BFS":
+            self.state = [row[:] for row in self.goal_state]
+        else:
+            self.state = [row[:] for row in self.initial_state]
+
+        self.create_board()
         self.draw_snapshot(self.state, 0)
+
         def step(index):
             if index < len(solution):
                 move = solution[index]
@@ -578,6 +782,7 @@ class PuzzleApp:
             else:
                 messagebox.showinfo("Done", f"Completed {index} moves.")
         step(0)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
