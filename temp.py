@@ -44,6 +44,26 @@ def manhattan_distance(state, goal_state):
                             break
     return distance
 
+def count_inversions(state):
+    """Đếm số lần hoán vị (inversions) của trạng thái."""
+    flat = []
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] != 0:
+                flat.append(state[i][j])
+    inversions = 0
+    for i in range(len(flat)):
+        for j in range(i + 1, len(flat)):
+            if flat[i] > flat[j]:
+                inversions += 1
+    return inversions
+
+def is_solvable(start_state, goal_state):
+    """Kiểm tra xem bài toán có lời giải không."""
+    start_inversions = count_inversions(start_state)
+    goal_inversions = count_inversions(goal_state)
+    return (start_inversions % 2) == (goal_inversions % 2)
+
 def apply_moves(state, moves_seq):
     current_state = [row[:] for row in state]
     for move in moves_seq:
@@ -316,7 +336,6 @@ def beam_search_solve(start_state, goal_state, beam_width=3):
         beam = new_beam[:beam_width]
     return None
 
-# Thuật toán di truyền cải tiến
 def genetic_algorithm_solve(start_state, goal_state, population_size=200, max_generations=1000, mutation_rate=0.05):
     moves_list = list(MOVES.keys())
 
@@ -335,7 +354,6 @@ def genetic_algorithm_solve(start_state, goal_state, population_size=200, max_ge
             valid_moves = [move for _, move in generate_states(current_state)]
             if not valid_moves:
                 break
-            # Ưu tiên nước đi giảm khoảng cách Manhattan
             best_move = min(valid_moves, key=lambda m: manhattan_distance(
                 apply_moves(current_state, [m]), goal_state) if apply_moves(current_state, [m]) else float('inf'))
             chromosome.append(best_move)
@@ -344,28 +362,24 @@ def genetic_algorithm_solve(start_state, goal_state, population_size=200, max_ge
                 break
         return chromosome
 
-    # Khởi tạo dân số
     population = [smart_initialize() for _ in range(population_size)]
 
     for generation in range(max_generations):
-        # Đánh giá fitness
         fitness_values = [fitness(chromosome) for chromosome in population]
         min_fitness = min(fitness_values)
-        if min_fitness < 0.1:  # Gần với trạng thái mục tiêu
+        if min_fitness < 0.1:
             best_idx = fitness_values.index(min_fitness)
             best_chromosome = population[best_idx]
             final_state = apply_moves(start_state, best_chromosome)
             if final_state and manhattan_distance(final_state, goal_state) == 0:
                 return best_chromosome
 
-        # Chọn lọc: Tournament selection
         new_population = []
         for _ in range(population_size):
             tournament = random.sample(population, max(3, population_size // 10))
             best = min(tournament, key=fitness)
             new_population.append(best.copy())
 
-        # Lai ghép: Two-point crossover
         for i in range(0, population_size, 2):
             if i + 1 < population_size and random.random() < 0.8:
                 parent1, parent2 = new_population[i], new_population[i + 1]
@@ -376,15 +390,12 @@ def genetic_algorithm_solve(start_state, goal_state, population_size=200, max_ge
                     child2 = parent2[:point1] + parent1[point1:point2] + parent2[point2:]
                     new_population[i], new_population[i + 1] = child1, child2
 
-        # Đột biến
         for chromosome in new_population:
             if random.random() < mutation_rate:
                 if random.random() < 0.5 and len(chromosome) > 1:
-                    # Thay đổi một nước đi
                     idx = random.randint(0, len(chromosome) - 1)
                     chromosome[idx] = random.choice(moves_list)
                 else:
-                    # Thêm hoặc xóa nước đi
                     if random.random() < 0.5 and len(chromosome) < 40:
                         idx = random.randint(0, len(chromosome))
                         chromosome.insert(idx, random.choice(moves_list))
@@ -394,7 +405,6 @@ def genetic_algorithm_solve(start_state, goal_state, population_size=200, max_ge
 
         population = new_population
 
-    # Trả về giải pháp tốt nhất nếu không tìm được chính xác
     fitness_values = [fitness(chromosome) for chromosome in population]
     best_idx = fitness_values.index(min(fitness_values))
     return population[best_idx]
@@ -523,6 +533,46 @@ def general_problem_solver(start_state, goal_state):
 
     return means_ends_analysis(start_state, goal_state, [])
 
+def backtracking_solve(start_state, goal_state):
+    """
+    Thuật toán backtracking lặp (iterative) để giải bài toán 8-puzzle.
+    Sử dụng heuristic (Manhattan distance) để ưu tiên các trạng thái.
+    Trả về dãy moves nếu tìm được, ngược lại trả về None.
+    """
+    if not is_solvable(start_state, goal_state):
+        return None  # Không có lời giải
+
+    visited = set()
+    stack = [(start_state, [], 0)]  # (state, path, depth)
+    max_depth = 50  # Giới hạn độ sâu tối đa để tránh vòng lặp quá lâu
+
+    while stack:
+        state, path, depth = stack.pop()
+        state_tuple = tuple(map(tuple, state))
+        goal_tuple = tuple(map(tuple, goal_state))
+
+        if state_tuple == goal_tuple:
+            return path
+
+        if depth > max_depth:
+            continue  # Bỏ qua nhánh nếu vượt quá độ sâu tối đa
+
+        if state_tuple in visited:
+            continue
+        visited.add(state_tuple)
+
+        # Sinh các trạng thái con và sắp xếp theo Manhattan distance
+        next_states = generate_states(state)
+        next_states.sort(key=lambda x: manhattan_distance(x[0], goal_state))
+
+        # Thêm các trạng thái con vào stack (theo thứ tự ngược để trạng thái tốt nhất được xử lý trước)
+        for new_state, move in reversed(next_states):
+            new_state_tuple = tuple(map(tuple, new_state))
+            if new_state_tuple not in visited:
+                stack.append((new_state, path + [move], depth + 1))
+
+    return None
+
 # -------------------------------------
 # GIAO DIỆN CHÍNH (Tkinter)
 # -------------------------------------
@@ -531,7 +581,7 @@ class PuzzleApp:
         self.root = root
         self.root.title("8-Puzzle Solver")
         self.root.geometry("1000x800")
-        self.root.configure(bg='#FFF8F8') 
+        self.root.configure(bg='#FFF8F8')
 
         self.initial_state = None
         self.goal_state = None
@@ -587,11 +637,14 @@ class PuzzleApp:
         algo_frame.pack(padx=5, pady=5, fill=tk.X)
         self.algo_var = tk.StringVar()
         self.algo_var.set("BFS")
-        algo_options = ["BFS", "UCS", "Greedy", "A*", "DFS", "IDS", "IDA*", 
-                        "Simple Hill Climbing", "Steepest Hill Climbing", 
-                        "Stochastic Hill Climbing", "Simulated Annealing", "Beam Search",
-                        "Genetic Algorithm", "AND-OR Graph Search", "Sensorless BFS",
-                        "General Problem Solver"]
+        algo_options = [
+            "BFS", "UCS", "Greedy", "A*", "DFS", "IDS", "IDA*",
+            "Simple Hill Climbing", "Steepest Hill Climbing",
+            "Stochastic Hill Climbing", "Simulated Annealing", "Beam Search",
+            "Genetic Algorithm", "AND-OR Graph Search", "Sensorless BFS",
+            "General Problem Solver", "Backtracking"
+        ]
+
         algo_menu = tk.OptionMenu(algo_frame, self.algo_var, *algo_options)
         algo_menu.config(font=('Arial', 12), bg='#FFB6C1', fg='black')
         algo_menu.pack(padx=5, pady=5, fill=tk.X)
@@ -643,8 +696,8 @@ class PuzzleApp:
 
     def update_states(self):
         try:
-            new_init = [[int(self.init_entries[i][j].get()) for j in range(3)] for i in range(3)]
-            new_goal = [[int(self.goal_entries[i][j].get()) for j in range(3)] for i in range(3)]
+            new_init = [[int(self.init_entries[i][j].get().strip()) for j in range(3)] for i in range(3)]
+            new_goal = [[int(self.goal_entries[i][j].get().strip()) for j in range(3)] for i in range(3)]
         except ValueError:
             messagebox.showerror("Error", "Please enter integers from 0 to 8.")
             return
@@ -653,8 +706,8 @@ class PuzzleApp:
             messagebox.showerror("Error", "Invalid state. Must contain unique numbers from 0 to 8.")
             return
         
-        self.initial_state = [row[:] for row in new_init]
-        self.goal_state = [row[:] for row in new_goal]
+        self.initial_state = new_init
+        self.goal_state = new_goal
         self.state = [row[:] for row in new_init]
         self.create_board()
         self.status_label.config(text="States updated.")
@@ -702,6 +755,8 @@ class PuzzleApp:
                 self.solution = sensorless_bfs_solve_wrapper(self.goal_state)
             elif algo == "General Problem Solver":
                 self.solution = general_problem_solver(self.initial_state, self.goal_state)
+            elif algo == "Backtracking":
+                self.solution = backtracking_solve(self.initial_state, self.goal_state)
 
         t = threading.Thread(target=run_solver)
         t.start()
