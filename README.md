@@ -1,6 +1,8 @@
 # 8 PUZZLE 🧩
 ---
 ## 📑 MỤC LỤC
+
+[Mục tiêu](#mục-tiêu)  
 [Giới thiệu](#giới-thiệu)  
 [Nhóm thuật toán](#nhóm-thuật-toán)  
    - [Tìm kiếm không có thông tin](#tìm-kiếm-không-có-thông-tin)  
@@ -8,9 +10,15 @@
    - [Tìm kiếm cục bộ](#tìm-kiếm-cục-bộ)  
    - [Tìm kiếm có ràng buộc](#tìm-kiếm-có-ràng-buộc)  
    - [Tìm kiếm trong môi trường phức tạp](#tìm-kiếm-trong-môi-trường-phức-tạp)  
+   
+[Kết luận](#kết-luận)  
 [Kết quả và trực quan hóa](#kết-quả-và-trực-quan-hóa)  
-...
 ---
+
+## 🧭 MỤC TIÊU
+
+Mục tiêu của đồ án này là áp dụng các thuật toán Trí tuệ Nhân tạo để giải quyết bài toán trò chơi 8 ô chữ (8-puzzle). Thông qua đó, nhóm tìm hiểu và so sánh hiệu quả của các thuật toán tìm kiếm không có thông tin, có thông tin, thuật toán cục bộ, ràng buộc, và học tăng cường trong việc giải quyết một bài toán cụ thể.
+
 
 ## 👋 GIỚI THIỆU
 Bài toán 8-Puzzle là bài toán cổ điển trong AI, yêu cầu đưa trạng thái ban đầu của một bảng 3x3 gồm các số từ 1 đến 8 và một ô trống về trạng thái mục tiêu bằng cách trượt các ô theo các bước hợp lệ.
@@ -303,7 +311,8 @@ Nhóm thuật toán tìm kiếm trong môi trường không xác định mô ph�
 
 Tổng quan, nhóm này cho thấy rõ tầm quan trọng của mức độ thông tin trong việc định hướng chiến lược tìm kiếm và ảnh hưởng trực tiếp đến thời gian giải quyết vấn đề.
 
----
+
+
 
 ### 🧠 6. Học củng cố
 
@@ -315,6 +324,19 @@ Tổng quan, nhóm này cho thấy rõ tầm quan trọng của mức độ thô
 ![So sánh Reinforcement Learning](assets/image/ReinforcementLearning.png)
 
 **Q-Learning** là một lựa chọn mạnh mẽ cho bài toán 8-Puzzle trong bối cảnh học tăng cường, đặc biệt khi môi trường có tính không xác định hoặc thông tin không đầy đủ. Thời gian thực thi **0.1294** giây cho thấy thuật toán này có khả năng hội tụ nhanh trong không gian trạng thái vừa phải, nhưng không thể cạnh tranh với các thuật toán tìm kiếm có thông tin hoặc không có thông tin tối ưu về tốc độ và độ chính xác (như A*, BFS).
+
+---
+
+## ✅ KẾT LUẬN
+
+Sau khi triển khai và thử nghiệm các nhóm thuật toán khác nhau trên bài toán 8-puzzle, nhóm rút ra một số kết luận sau:
+
+- **Thuật toán tìm kiếm không có thông tin** (như BFS, DFS, IDS) cho thấy hiệu quả khác nhau: BFS tìm được lời giải ngắn nhất nhưng tiêu tốn nhiều bộ nhớ, DFS nhanh nhưng không đảm bảo tối ưu, IDS là sự cân bằng giữa hai thuật toán này.
+- **Thuật toán có thông tin** (A*, Greedy, IDA*) vượt trội hơn nhờ sử dụng heuristic. A* là thuật toán hiệu quả nhất về thời gian và độ chính xác, trong khi IDA* tiết kiệm bộ nhớ hơn.
+- **Thuật toán cục bộ và ràng buộc** như Hill Climbing, Min-conflict cũng giải được bài toán nhưng dễ mắc kẹt ở nghiệm cục bộ.
+- **Thuật toán học tăng cường** (Q-learning, SARSA) tuy tốn nhiều thời gian huấn luyện nhưng có khả năng học cách giải bài toán một cách tổng quát, đặc biệt hữu ích trong môi trường phức tạp.
+
+Thông qua project này, nhóm đã củng cố kiến thức lý thuyết và kỹ năng lập trình thuật toán AI, đồng thời hiểu rõ hơn về cách lựa chọn giải pháp phù hợp cho từng loại bài toán cụ thể.
 
 ---
 
