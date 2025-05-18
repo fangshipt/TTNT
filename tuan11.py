@@ -91,6 +91,20 @@ def greedy_solve(start_state, goal_state):
                 new_h = manhattan_distance(new_state)
                 heapq.heappush(pq, (new_h, new_state, path + [move]))
     return None
+def greedy_solve(start_state, goal_state):
+    pq = []
+    heapq.heappush(pq, (manhattan_distance(start_state), start_state, []))
+    visited = {tuple(map(tuple, start_state))}
+    while pq:
+        h, state, path = heapq.heappop(pq)
+        if state == goal_state:
+            return path
+        for nxt, mv in generate_states(state):
+            t = tuple(map(tuple, nxt))
+            if t not in visited:
+                visited.add(t)
+                heapq.heappush(pq, (manhattan_distance(nxt), nxt, path + [mv]))
+    return None
 
 def astar_solve(start_state, goal_state):
     pq = []

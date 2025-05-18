@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import messagebox
 import heapq
@@ -7,11 +8,9 @@ import random
 import math
 import itertools
 
-# -------------------------------------
-# HÀM HỖ TRỢ CHO 8-PUZZLE
-# -------------------------------------
+
+# Hàm hỗ trợ cho 8-puzzle
 def find_blank(state):
-    """Tìm vị trí ô trống (số 0) trong bàn cờ."""
     for i in range(3):
         for j in range(3):
             if state[i][j] == 0:
@@ -45,12 +44,7 @@ def manhattan_distance(state, goal_state):
     return distance
 
 def count_inversions(state):
-    """Đếm số lần hoán vị (inversions) của trạng thái."""
-    flat = []
-    for i in range(3):
-        for j in range(3):
-            if state[i][j] != 0:
-                flat.append(state[i][j])
+    flat = [state[i][j] for i in range(3) for j in range(3) if state[i][j] != 0]
     inversions = 0
     for i in range(len(flat)):
         for j in range(i + 1, len(flat)):
@@ -59,10 +53,7 @@ def count_inversions(state):
     return inversions
 
 def is_solvable(start_state, goal_state):
-    """Kiểm tra xem bài toán có lời giải không."""
-    start_inversions = count_inversions(start_state)
-    goal_inversions = count_inversions(goal_state)
-    return (start_inversions % 2) == (goal_inversions % 2)
+    return (count_inversions(start_state) % 2) == (count_inversions(goal_state) % 2)
 
 def apply_moves(state, moves_seq):
     current_state = [row[:] for row in state]
@@ -73,16 +64,13 @@ def apply_moves(state, moves_seq):
         if 0 <= new_x < 3 and 0 <= new_y < 3:
             current_state[blank_x][blank_y], current_state[new_x][new_y] = current_state[new_x][new_y], current_state[blank_x][blank_y]
         else:
-            return None  # Invalid move
+            return None
     return current_state
 
-# -------------------------------------
-# CÁC THUẬT TOÁN TÌM KIẾM
-# -------------------------------------
+# Các thuật toán tìm kiếm (giữ nguyên, chỉ liệt kê tên)
 def bfs_solve(start_state, goal_state):
     queue = deque([(start_state, [])])
-    visited = set()
-    visited.add(tuple(map(tuple, start_state)))
+    visited = set([tuple(map(tuple, start_state))])
     while queue:
         current_state, path = queue.popleft()
         if current_state == goal_state:
@@ -92,41 +80,6 @@ def bfs_solve(start_state, goal_state):
             if state_tuple not in visited:
                 visited.add(state_tuple)
                 queue.append((new_state, path + [move]))
-    return None
-
-def ucs_solve(start_state, goal_state):
-    pq = []
-    initial_tuple = tuple(map(tuple, start_state))
-    heapq.heappush(pq, (0, start_state, []))
-    visited = {initial_tuple: 0}
-    while pq:
-        cost, state, path = heapq.heappop(pq)
-        if state == goal_state:
-            return path
-        for new_state, move in generate_states(state):
-            new_cost = cost + 1
-            new_tuple = tuple(map(tuple, new_state))
-            if new_tuple not in visited or new_cost < visited[new_tuple]:
-                visited[new_tuple] = new_cost
-                heapq.heappush(pq, (new_cost, new_state, path + [move]))
-    return None
-
-def greedy_solve(start_state, goal_state):
-    pq = []
-    initial_tuple = tuple(map(tuple, start_state))
-    h = manhattan_distance(start_state, goal_state)
-    heapq.heappush(pq, (h, start_state, []))
-    visited = {initial_tuple}
-    while pq:
-        h, state, path = heapq.heappop(pq)
-        if state == goal_state:
-            return path
-        for new_state, move in generate_states(state):
-            new_tuple = tuple(map(tuple, new_state))
-            if new_tuple not in visited:
-                visited.add(new_tuple)
-                new_h = manhattan_distance(new_state, goal_state)
-                heapq.heappush(pq, (new_h, new_state, path + [move]))
     return None
 
 def astar_solve(start_state, goal_state):
@@ -408,7 +361,40 @@ def genetic_algorithm_solve(start_state, goal_state, population_size=200, max_ge
     fitness_values = [fitness(chromosome) for chromosome in population]
     best_idx = fitness_values.index(min(fitness_values))
     return population[best_idx]
+def ucs_solve(start_state, goal_state):
+    pq = []
+    initial_tuple = tuple(map(tuple, start_state))
+    heapq.heappush(pq, (0, start_state, []))
+    visited = {initial_tuple: 0}
+    while pq:
+        cost, state, path = heapq.heappop(pq)
+        if state == goal_state:
+            return path
+        for new_state, move in generate_states(state):
+            new_cost = cost + 1
+            new_tuple = tuple(map(tuple, new_state))
+            if new_tuple not in visited or new_cost < visited[new_tuple]:
+                visited[new_tuple] = new_cost
+                heapq.heappush(pq, (new_cost, new_state, path + [move]))
+    return None
 
+def greedy_solve(start_state, goal_state):
+    pq = []
+    initial_tuple = tuple(map(tuple, start_state))
+    h = manhattan_distance(start_state, goal_state)
+    heapq.heappush(pq, (h, start_state, []))
+    visited = {initial_tuple}
+    while pq:
+        h, state, path = heapq.heappop(pq)
+        if state == goal_state:
+            return path
+        for new_state, move in generate_states(state):
+            new_tuple = tuple(map(tuple, new_state))
+            if new_tuple not in visited:
+                visited.add(new_tuple)
+                new_h = manhattan_distance(new_state, goal_state)
+                heapq.heappush(pq, (new_h, new_state, path + [move]))
+    return None
 def and_or_solve(start_state, goal_state, limit=100):
     def and_or(state, path, depth):
         if state == goal_state:
@@ -534,11 +520,6 @@ def general_problem_solver(start_state, goal_state):
     return means_ends_analysis(start_state, goal_state, [])
 
 def backtracking_solve(start_state, goal_state):
-    """
-    Thuật toán backtracking lặp (iterative) để giải bài toán 8-puzzle.
-    Sử dụng heuristic (Manhattan distance) để ưu tiên các trạng thái.
-    Trả về dãy moves nếu tìm được, ngược lại trả về None.
-    """
     if not is_solvable(start_state, goal_state):
         return None  # Không có lời giải
 
@@ -561,11 +542,9 @@ def backtracking_solve(start_state, goal_state):
             continue
         visited.add(state_tuple)
 
-        # Sinh các trạng thái con và sắp xếp theo Manhattan distance
         next_states = generate_states(state)
         next_states.sort(key=lambda x: manhattan_distance(x[0], goal_state))
 
-        # Thêm các trạng thái con vào stack (theo thứ tự ngược để trạng thái tốt nhất được xử lý trước)
         for new_state, move in reversed(next_states):
             new_state_tuple = tuple(map(tuple, new_state))
             if new_state_tuple not in visited:
@@ -573,16 +552,74 @@ def backtracking_solve(start_state, goal_state):
 
     return None
 
-# -------------------------------------
-# GIAO DIỆN CHÍNH (Tkinter)
-# -------------------------------------
-class PuzzleApp:
+
+# Lớp Menu chính
+class MainMenu:
     def __init__(self, root):
         self.root = root
-        self.root.title("8-Puzzle Solver")
-        self.root.geometry("1000x800")
+        self.root.title("Menu")
+        # Chỉnh kích thước cửa sổ menu
+        self.root.geometry("1000x700")
         self.root.configure(bg='#FFF8F8')
+        self.create_menu()
 
+    def create_menu(self):
+        # Tiêu đề
+        tk.Label(self.root, text="Choose an Algorithm", bg='#FFF8F8',
+                 font=('Arial', 18, 'bold')).pack(pady=20)
+
+        # Frame chính chứa lưới các nút
+        menu_frame = tk.Frame(self.root, bg='#FFF8F8')
+        menu_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        # Danh sách thuật toán (có thể append thêm sau này)
+        algo_options = [
+            "BFS", "UCS", "Greedy", "A*", "DFS", "IDS", "IDA*",
+            "Simple Hill Climbing", "Steepest Hill Climbing", "Stochastic Hill Climbing",
+            "Simulated Annealing", "Beam Search", "Genetic Algorithm",
+            "AND-OR Graph Search", "Sensorless BFS", "General Solver", "Backtracking",
+            # bạn có thể thêm tiếp ở đây...
+        ]
+
+        cols = 5  # số cột bạn muốn
+        for idx, algo in enumerate(algo_options):
+            row = idx // cols
+            col = idx % cols
+            btn = tk.Button(menu_frame, text=algo,
+                            font=('Arial', 12),    # cỡ chữ vừa phải
+                            width=18,              # chiều rộng nút
+                            height=2,              # chiều cao nút
+                            bg='#FFB6C1', fg='black',
+                            relief='raised',
+                            command=lambda a=algo: self.open_puzzle(a))
+            btn.grid(row=row, column=col, padx=10, pady=10, sticky='nsew')
+
+        # Cho phép mỗi cột/ mỗi hàng tự giãn đều nhau
+        for c in range(cols):
+            menu_frame.grid_columnconfigure(c, weight=1)
+        total_rows = (len(algo_options) + cols - 1) // cols
+        for r in range(total_rows):
+            menu_frame.grid_rowconfigure(r, weight=1)
+
+    def open_puzzle(self, algo):
+        self.root.withdraw()
+        puzzle_root = tk.Toplevel()
+        puzzle_root.protocol("WM_DELETE_WINDOW", lambda: self.on_puzzle_close(puzzle_root))
+        PuzzleApp(puzzle_root, algo, self)
+
+    def on_puzzle_close(self, puzzle_root):
+        puzzle_root.destroy()
+        self.root.deiconify()
+
+# Giao diện 8-Puzzle
+class PuzzleApp:
+    def __init__(self, root, algo, main_menu):
+        self.root = root
+        self.root.title("8-Puzzle Solver")
+        self.root.geometry("1000x750")
+        self.root.configure(bg='#FFF8F8')
+        self.algo = algo
+        self.main_menu = main_menu
         self.initial_state = None
         self.goal_state = None
         self.state = None
@@ -590,13 +627,10 @@ class PuzzleApp:
 
         self.main_frame = tk.Frame(self.root, bg='#FFF8F8')
         self.main_frame.pack(fill=tk.BOTH, expand=True)
-
         self.left_frame = tk.Frame(self.main_frame, bg='#FFF8F8', bd=2, relief=tk.RIDGE)
         self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
-
         self.center_frame = tk.Frame(self.main_frame, bg='#FFF8F8', bd=2, relief=tk.RIDGE)
         self.center_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
-
         self.right_frame = tk.Frame(self.main_frame, bg='#FFF8F8', bd=2, relief=tk.RIDGE)
         self.right_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
 
@@ -605,59 +639,38 @@ class PuzzleApp:
         self.create_right_panel()
 
     def create_left_panel(self):
-        instruction_label = tk.Label(self.left_frame, text="Input states using 0-8 (0 is blank)", bg='#FFF8F8', font=('Arial', 10, 'italic'))
-        instruction_label.pack(pady=5)
+        tk.Label(self.left_frame, text="Input states (0-8, 0 is blank)", bg='#FFF8F8', font=('Arial', 10, 'italic')).pack(pady=5)
 
-        init_frame = tk.LabelFrame(self.left_frame, text="Initial State", bg='#FFF8F8', font=('Arial', 12, 'bold'), fg='black')
+        init_frame = tk.LabelFrame(self.left_frame, text="Initial State", bg='#FFF8F8', font=('Arial', 12, 'bold'))
         init_frame.pack(padx=5, pady=5)
-        self.init_entries = [[None]*3 for _ in range(3)]
+        self.init_entries = [[tk.Entry(init_frame, width=2, font=('Arial', 20), justify='center') for j in range(3)] for i in range(3)]
         init_defaults = [['2','6','5'],['8','0','7'],['4','3','1']]
         for i in range(3):
             for j in range(3):
-                e = tk.Entry(init_frame, width=2, font=('Arial', 20), justify='center', bg='white', fg='black')
-                e.grid(row=i, column=j, padx=10, pady=10)
-                e.insert(0, init_defaults[i][j])
-                self.init_entries[i][j] = e
+                self.init_entries[i][j].grid(row=i, column=j, padx=10, pady=10)
+                self.init_entries[i][j].insert(0, init_defaults[i][j])
 
-        goal_frame = tk.LabelFrame(self.left_frame, text="Goal State", bg='#FFF8F8', font=('Arial', 12, 'bold'), fg='black')
+        goal_frame = tk.LabelFrame(self.left_frame, text="Goal State", bg='#FFF8F8', font=('Arial', 12, 'bold'))
         goal_frame.pack(padx=5, pady=5)
-        self.goal_entries = [[None]*3 for _ in range(3)]
+        self.goal_entries = [[tk.Entry(goal_frame, width=2, font=('Arial', 20), justify='center') for j in range(3)] for i in range(3)]
         goal_defaults = [['1','2','3'],['4','5','6'],['7','8','0']]
         for i in range(3):
             for j in range(3):
-                e = tk.Entry(goal_frame, width=2, font=('Arial', 20), justify='center', bg='white', fg='black')
-                e.grid(row=i, column=j, padx=10, pady=10)
-                e.insert(0, goal_defaults[i][j])
-                self.goal_entries[i][j] = e
+                self.goal_entries[i][j].grid(row=i, column=j, padx=10, pady=10)
+                self.goal_entries[i][j].insert(0, goal_defaults[i][j])
 
-        update_button = tk.Button(self.left_frame, text="Update States", font=('Arial', 12, 'bold'), bg='#FFB6C1', fg='black', command=self.update_states)
-        update_button.pack(padx=5, pady=5, fill=tk.X)
+        tk.Button(self.left_frame, text="Update States", font=('Arial', 12, 'bold'), bg='#FFB6C1', command=self.update_states).pack(padx=5, pady=5, fill=tk.X)
+        tk.Button(self.left_frame, text="Solve", font=('Arial', 12, 'bold'), bg='#FFB6C1', command=self.start_solver_thread).pack(padx=5, pady=5, fill=tk.X)
+        tk.Button(self.left_frame, text="Reset", font=('Arial', 12, 'bold'), bg='#FFB6C1', command=self.reset_board).pack(padx=5, pady=5, fill=tk.X)
+        tk.Button(self.left_frame, text="Exit to Menu", font=('Arial', 12, 'bold'), bg='#FFB6C1', command=self.exit_to_menu).pack(padx=5, pady=5, fill=tk.X)
+        tk.Label(self.left_frame, text=f"Algorithm: {self.algo}", bg='#FFF8F8', font=('Arial', 12, 'italic')).pack(pady=5)
 
-        algo_frame = tk.LabelFrame(self.left_frame, text="Algorithm Selection", bg='#FFF8F8', font=('Arial', 12, 'bold'), fg='black')
-        algo_frame.pack(padx=5, pady=5, fill=tk.X)
-        self.algo_var = tk.StringVar()
-        self.algo_var.set("BFS")
-        algo_options = [
-            "BFS", "UCS", "Greedy", "A*", "DFS", "IDS", "IDA*",
-            "Simple Hill Climbing", "Steepest Hill Climbing",
-            "Stochastic Hill Climbing", "Simulated Annealing", "Beam Search",
-            "Genetic Algorithm", "AND-OR Graph Search", "Sensorless BFS",
-            "General Problem Solver", "Backtracking"
-        ]
-
-        algo_menu = tk.OptionMenu(algo_frame, self.algo_var, *algo_options)
-        algo_menu.config(font=('Arial', 12), bg='#FFB6C1', fg='black')
-        algo_menu.pack(padx=5, pady=5, fill=tk.X)
-
-        solve_button = tk.Button(self.left_frame, text="Solve", font=('Arial', 12, 'bold'), bg='#FFB6C1', fg='black', command=lambda: self.start_solver_thread(self.algo_var.get()))
-        solve_button.pack(padx=5, pady=5, fill=tk.X)
-
-        reset_button = tk.Button(self.left_frame, text="Reset", font=('Arial', 12, 'bold'), bg='#FFB6C1', fg='black', command=self.reset_board)
-        reset_button.pack(padx=5, pady=5, fill=tk.X)
+    def exit_to_menu(self):
+        self.root.destroy()
+        self.main_menu.root.deiconify()
 
     def create_center_panel(self):
-        board_label = tk.Label(self.center_frame, text="8-Puzzle Board", bg='#FFF8F8', font=('Arial', 14, 'bold'))
-        board_label.pack(pady=5)
+        tk.Label(self.center_frame, text="8-Puzzle Board", bg='#FFF8F8', font=('Arial', 14, 'bold')).pack(pady=5)
         self.board_frame = tk.Frame(self.center_frame, bg='#FFF8F8')
         self.board_frame.pack(pady=5)
         self.buttons = [[None]*3 for _ in range(3)]
@@ -666,11 +679,10 @@ class PuzzleApp:
         self.status_label.pack(pady=5)
 
     def create_right_panel(self):
-        solution_label = tk.Label(self.right_frame, text="Solution Steps:", bg='#FFF8F8', font=('Arial', 12, 'bold'))
-        solution_label.pack(pady=5)
+        tk.Label(self.right_frame, text="Solution Steps:", bg='#FFF8F8', font=('Arial', 12, 'bold')).pack(pady=5)
         solution_frame = tk.Frame(self.right_frame, bg='#FFF8F8')
         solution_frame.pack(fill=tk.BOTH, expand=True, pady=5)
-        self.solution_text = tk.Text(solution_frame, height=20, width=20, font=('Arial', 12), bg='white', fg='black')
+        self.solution_text = tk.Text(solution_frame, height=20, width=20, font=('Arial', 12))
         self.solution_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar = tk.Scrollbar(solution_frame, command=self.solution_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -682,15 +694,11 @@ class PuzzleApp:
             self.initial_state = [row[:] for row in self.state]
         for widget in self.board_frame.winfo_children():
             widget.destroy()
-        self.buttons = [[None]*3 for _ in range(3)]
         for i in range(3):
             for j in range(3):
                 val = self.state[i][j]
-                btn = tk.Button(self.board_frame,
-                                text=str(val) if val != 0 else '',
-                                font=('Arial', 24, 'bold'),
-                                width=4, height=2,
-                                bg='#FFB6C1', fg='black')
+                btn = tk.Button(self.board_frame, text=str(val) if val != 0 else '', font=('Arial', 24, 'bold'),
+                                width=4, height=2, bg='#FFB6C1')
                 btn.grid(row=i, column=j, padx=8, pady=8)
                 self.buttons[i][j] = btn
 
@@ -701,61 +709,57 @@ class PuzzleApp:
         except ValueError:
             messagebox.showerror("Error", "Please enter integers from 0 to 8.")
             return
-        
         if sorted(sum(new_init, [])) != list(range(9)) or sorted(sum(new_goal, [])) != list(range(9)):
             messagebox.showerror("Error", "Invalid state. Must contain unique numbers from 0 to 8.")
             return
-        
         self.initial_state = new_init
         self.goal_state = new_goal
         self.state = [row[:] for row in new_init]
         self.create_board()
         self.status_label.config(text="States updated.")
 
-    def start_solver_thread(self, algo):
+    def start_solver_thread(self):
         self.solution = None
         self.status_label.config(text="Solving...")
-        self.solution_text.config(state='normal')
         self.solution_text.delete(1.0, tk.END)
-        self.solution_text.config(state='disabled')
 
         if not self.goal_state:
             self.goal_state = [[1,2,3],[4,5,6],[7,8,0]]
-        
+
         def run_solver():
-            if algo == "BFS":
+            if self.algo == "BFS":
                 self.solution = bfs_solve(self.initial_state, self.goal_state)
-            elif algo == "UCS":
+            elif self.algo == "UCS":
                 self.solution = ucs_solve(self.initial_state, self.goal_state)
-            elif algo == "Greedy":
+            elif self.algo == "Greedy":
                 self.solution = greedy_solve(self.initial_state, self.goal_state)
-            elif algo == "A*":
+            elif self.algo == "A*":
                 self.solution = astar_solve(self.initial_state, self.goal_state)
-            elif algo == "DFS":
+            elif self.algo == "DFS":
                 self.solution = dfs_solve(self.initial_state, self.goal_state)
-            elif algo == "IDS":
+            elif self.algo == "IDS":
                 self.solution = ids_solve(self.initial_state, self.goal_state)
-            elif algo == "IDA*":
+            elif self.algo == "IDA*":
                 self.solution = ida_star_solve(self.initial_state, self.goal_state)
-            elif algo == "Simple Hill Climbing":
+            elif self.algo == "Simple Hill Climbing":
                 self.solution = simple_hill_climbing_solve(self.initial_state, self.goal_state)
-            elif algo == "Steepest Hill Climbing":
+            elif self.algo == "Steepest Hill Climbing":
                 self.solution = steepest_hill_climbing_solve(self.initial_state, self.goal_state)
-            elif algo == "Stochastic Hill Climbing":
+            elif self.algo == "Stochastic Hill Climbing":
                 self.solution = stochastic_hill_climbing_solve(self.initial_state, self.goal_state)
-            elif algo == "Simulated Annealing":
+            elif self.algo == "Simulated Annealing":
                 self.solution = simulated_annealing_solve(self.initial_state, self.goal_state)
-            elif algo == "Beam Search":
+            elif self.algo == "Beam Search":
                 self.solution = beam_search_solve(self.initial_state, self.goal_state)
-            elif algo == "Genetic Algorithm":
+            elif self.algo == "Genetic Algorithm":
                 self.solution = genetic_algorithm_solve(self.initial_state, self.goal_state)
-            elif algo == "AND-OR Graph Search":
+            elif self.algo == "AND-OR Graph Search":
                 self.solution = and_or_solve(self.initial_state, self.goal_state)
-            elif algo == "Sensorless BFS":
+            elif self.algo == "Sensorless BFS":
                 self.solution = sensorless_bfs_solve_wrapper(self.goal_state)
-            elif algo == "General Problem Solver":
+            elif self.algo == "General Problem Solver":
                 self.solution = general_problem_solver(self.initial_state, self.goal_state)
-            elif algo == "Backtracking":
+            elif self.algo == "Backtracking":
                 self.solution = backtracking_solve(self.initial_state, self.goal_state)
 
         t = threading.Thread(target=run_solver)
@@ -766,35 +770,24 @@ class PuzzleApp:
         if thread.is_alive():
             self.root.after(100, lambda: self.check_thread(thread))
         else:
-            if self.solution is not None:
+            if self.solution:
                 self.status_label.config(text="Solution found!")
-                self.solution_text.config(state='normal')
-                self.solution_text.delete(1.0, tk.END)
                 for i, move in enumerate(self.solution):
                     self.solution_text.insert(tk.END, f"Step {i+1}: {move}\n")
-                self.solution_text.config(state='disabled')
                 self.animate_solution(self.solution)
             else:
                 self.status_label.config(text="No solution found.")
-                self.solution_text.config(state='normal')
-                self.solution_text.delete(1.0, tk.END)
                 self.solution_text.insert(tk.END, "No solution found.")
-                self.solution_text.config(state='disabled')
 
     def reset_board(self):
         if self.initial_state:
             self.state = [row[:] for row in self.initial_state]
             self.create_board()
-            self.status_label.config(text="Board reset to initial state.")
-            self.solution_text.config(state='normal')
+            self.status_label.config(text="Board reset.")
             self.solution_text.delete(1.0, tk.END)
-            self.solution_text.config(state='disabled')
 
     def animate_solution(self, solution):
-        if self.algo_var.get() == "Sensorless BFS":
-            self.state = [row[:] for row in self.goal_state]
-        else:
-            self.state = [row[:] for row in self.initial_state]
+        self.state = [row[:] for row in self.initial_state]
         self.create_board()
 
         def step(index):
@@ -811,7 +804,8 @@ class PuzzleApp:
                 self.status_label.config(text="Completed!")
         step(0)
 
+# Khởi động ứng dụng
 if __name__ == "__main__":
     root = tk.Tk()
-    app = PuzzleApp(root)
+    app = MainMenu(root)
     root.mainloop()
