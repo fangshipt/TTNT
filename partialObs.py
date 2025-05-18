@@ -30,7 +30,7 @@ class PartialObsApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Belief State Search With Partial Observation")
-        self.root.geometry("1200x850")
+        self.root.geometry("1000x750")
         self.root.configure(bg='#FFF8F8')
         self.build_ui()
 

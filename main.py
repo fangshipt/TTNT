@@ -12,7 +12,7 @@ class MainMenu:
         self.root = root
         self.root.title("Menu")
         window_width = 1000
-        window_height = 700
+        window_height = 750
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
         x = (screen_width - window_width) // 2
@@ -30,7 +30,7 @@ class MainMenu:
             "Simple Hill Climbing", "Steepest Hill Climbing", "Stochastic Hill Climbing",
             "Simulated Annealing", "Beam Search", "Genetic Algorithm",
             "Backtracking", "AC-3", "AND-OR Graph Search",
-            "Q‑Learning", "Search with Partial Ob", "Search with No Ob"
+            "Search with Partial Ob", "Search with No Ob","Q‑Learning"
         ]
         cols = 5
         for idx, algo in enumerate(algo_options):

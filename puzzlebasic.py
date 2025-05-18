@@ -47,8 +47,8 @@ class PuzzleApp:
         goal_frame.pack(padx=5, pady=5)
         self.goal_entries = [[tk.Entry(goal_frame, width=2, font=('Arial', 20), justify='center') for j in range(3)] for i in range(3)]
         goal_defaults = [[1, 2, 3],
-    [4, 5, 6],
-    [7, 8, 0]]
+                        [4, 5, 6],
+                        [7, 8, 0]]
         for i in range(3):
             for j in range(3):
                 self.goal_entries[i][j].grid(row=i, column=j, padx=10, pady=10)

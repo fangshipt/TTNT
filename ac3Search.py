@@ -71,7 +71,7 @@ class AC3CSP:
         self.root = root
         self.main_menu = main_menu
         self.root.title("8-Puzzle CSP Demo")
-        self.root.geometry("1200x850")
+        self.root.geometry("1000x750")
         self.root.configure(bg='#FFF8F8')
 
         self.order = [0, 1, 2, 4, 8, 3, 5, 6, 7]

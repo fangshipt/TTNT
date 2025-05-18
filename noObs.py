@@ -20,7 +20,7 @@ class NoObservationApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Belief State Search With No Observation")
-        self.root.geometry("1200x850")
+        self.root.geometry("1000x750")
         self.root.configure(bg='#FFF8F8')
         self.step_times = []
         self.build_ui()
@@ -177,11 +177,3 @@ class NoObservationApp:
         
         finally:
             self.root.after(0, lambda: self.run_btn.config(state='normal'))
-
-if __name__ == "__main__":
-    try:
-        root = tk.Tk()
-        app = NoObservationApp(root)
-        root.mainloop()
-    except Exception as e:
-        logger.error(f"Application error: {e}")

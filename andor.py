@@ -8,7 +8,7 @@ class ANDORGraphSearch:
     def __init__(self, root, return_to_menu_callback=None):
         self.root = root
         self.root.title("AND-OR Search Puzzle Tree")
-        self.root.geometry("1400x900")
+        self.root.geometry("1000x750")
         self.root.configure(bg='#FFF8F8') 
         self.stop_flag = False
         self.solution_found = False
