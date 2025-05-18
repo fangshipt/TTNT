@@ -1,10 +1,10 @@
 import tkinter as tk
 from backtracking import Backtracking
-from puzzlebasic import PuzzleApp
-from ac3Search import CSPDemoApp
+from puzzleBasic import PuzzleApp
+from ac3Search import AC3CSP
 from partialObs import PartialObsApp
 from noObs import NoObservationApp
-from andor import ANDORGraphSearch
+from andOr import ANDORGraphSearch
 
 # Lớp Menu chính
 class MainMenu:
@@ -70,7 +70,7 @@ class MainMenu:
         if algo == "Backtracking":
             Backtracking(puzzle_root)
         elif algo == "AC-3":
-            CSPDemoApp(puzzle_root)
+            AC3CSP(puzzle_root)
         elif algo == "Search with Partial Ob":
             PartialObsApp(puzzle_root)
         elif algo == "Search with No Ob":

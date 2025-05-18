@@ -66,16 +66,14 @@ class Backtracking:
                 return result
         return None
 
-class CSPDemoApp:
+class AC3CSP:
     def __init__(self, root, main_menu=None):
         self.root = root
         self.main_menu = main_menu
-        # Increase window size
         self.root.title("8-Puzzle CSP Demo")
         self.root.geometry("1200x850")
         self.root.configure(bg='#FFF8F8')
 
-        # CSP parameters
         self.order = [0, 1, 2, 4, 8, 3, 5, 6, 7]
         self.goal = list(range(9))
         self.stop_flag = False
@@ -84,7 +82,6 @@ class CSPDemoApp:
         self.setup_ui()
 
     def setup_ui(self):
-        # Domains display
         domain_frame = tk.LabelFrame(self.root, text="Domains", font=('Arial',16,'bold'), bg='#FFF8F8')
         domain_frame.pack(pady=10)
         self.domain_labels = []
@@ -95,7 +92,6 @@ class CSPDemoApp:
             lbl.grid(row=i//3, column=i%3, padx=10, pady=10)
             self.domain_labels.append(lbl)
 
-        # Backtracking state
         bt_frame = tk.LabelFrame(self.root, text="Backtracking", font=('Arial',16,'bold'), bg='#FFF8F8')
         bt_frame.pack(pady=10)
         self.curr_labels = []
@@ -104,7 +100,6 @@ class CSPDemoApp:
             lbl.grid(row=i//3, column=i%3, padx=10, pady=10)
             self.curr_labels.append(lbl)
 
-        # Controls
         ctrl_frame = tk.Frame(self.root, bg='#FFF8F8')
         ctrl_frame.pack(pady=15)
         btn_font = ('Arial',14,'bold')
@@ -113,7 +108,6 @@ class CSPDemoApp:
         tk.Button(ctrl_frame, text="Stop", command=self.stop, **btn_kwargs).pack(side='left', padx=10)
         tk.Button(ctrl_frame, text="Exit to Menu", command=self.exit_to_menu, **btn_kwargs).pack(side='left', padx=10)
 
-        # Status and timing
         self.status = tk.Label(self.root, text="Idle", font=('Arial',14), bg='#FFF8F8')
         self.status.pack(pady=10)
         self.time_label = tk.Label(self.root, text="Time: -", font=('Arial',14), bg='#FFF8F8')

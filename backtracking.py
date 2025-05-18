@@ -9,32 +9,38 @@ class Backtracking:
         self.root = root
         self.root.title("Backtracking Demo")
         self.root.geometry("1000x750")
+        self.root.configure(bg='#FFF8F8')  
         self.stop_flag = False
         self.solution_found = False
         self.start_time = 0
         self.goal = list(range(9))  # [0,1,2,3,4,5,6,7,8]
-        self.frame_curr = tk.LabelFrame(root, text="Current", font=('Arial',12,'bold'))
-        self.frame_curr.pack(pady=10)
+
+        self.frame_curr = tk.LabelFrame(root, text="Current", font=('Arial', 16, 'bold'), bg='#FFF8F8', fg='black')
+        self.frame_curr.pack(pady=15)
         self.curr_buttons = []
         for i in range(9):
-            btn = tk.Label(self.frame_curr, text='-', width=4, height=2,
-                           font=('Arial',16), relief='solid', bg='white')
-            btn.grid(row=i//3, column=i%3, padx=5, pady=5)
+            btn = tk.Label(self.frame_curr, text='-', width=6, height=2,
+                           font=('Arial', 18, 'bold'), relief='solid', bg='#FFB6C1', fg='black')
+            btn.grid(row=i//3, column=i%3, padx=10, pady=10)
             self.curr_buttons.append(btn)
-        self.frame_goal = tk.LabelFrame(root, text="Goal State", font=('Arial',12,'bold'))
-        self.frame_goal.pack(pady=10)
-        for i, val in enumerate(self.goal):
-            lbl = tk.Label(self.frame_goal, text=str(val), width=4, height=2,
-                           font=('Arial',16), relief='solid', bg='#e0e0e0')
-            lbl.grid(row=i//3, column=i%3, padx=5, pady=5)
-        ctrl = tk.Frame(root)
-        ctrl.pack(pady=10)
-        tk.Button(ctrl, text="Start Solving", command=self.start).pack(side='left', padx=5)
-        tk.Button(ctrl, text="Stop", command=self.stop).pack(side='left', padx=5)
-        tk.Button(ctrl, text="Close", command=root.destroy).pack(side='left', padx=5)
 
-        self.status_label = tk.Label(root, text="Idle", font=('Arial',12))
-        self.status_label.pack(pady=5)
+        self.frame_goal = tk.LabelFrame(root, text="Goal State", font=('Arial', 16, 'bold'), bg='#FFF8F8', fg='black')
+        self.frame_goal.pack(pady=15)
+        for i, val in enumerate(self.goal):
+            lbl = tk.Label(self.frame_goal, text=str(val), width=6, height=2,
+                           font=('Arial', 18, 'bold'), relief='solid', bg='#FFB6C1', fg='black')
+            lbl.grid(row=i//3, column=i%3, padx=10, pady=10)
+
+        ctrl = tk.Frame(root, bg='#FFF8F8')
+        ctrl.pack(pady=15)
+        btn_font = ('Arial', 14, 'bold')
+        btn_kwargs = {'font': btn_font, 'bg': '#FFB6C1', 'fg': 'black', 'width': 15}
+        tk.Button(ctrl, text="Start Solving", command=self.start, **btn_kwargs).pack(side='left', padx=10)
+        tk.Button(ctrl, text="Stop", command=self.stop, **btn_kwargs).pack(side='left', padx=10)
+        tk.Button(ctrl, text="Close", command=root.destroy, **btn_kwargs).pack(side='left', padx=10)
+
+        self.status_label = tk.Label(root, text="Idle", font=('Arial', 14), bg='#FFF8F8', fg='black')
+        self.status_label.pack(pady=10)
 
     def update_current(self, state, failed_idx=None):
         for i, v in enumerate(state):
@@ -42,7 +48,7 @@ class Backtracking:
             if i == failed_idx:
                 self.curr_buttons[i].config(bg='red')
             else:
-                self.curr_buttons[i].config(bg='white')
+                self.curr_buttons[i].config(bg='#FFB6C1')
         self.root.update_idletasks()
 
     def start(self):

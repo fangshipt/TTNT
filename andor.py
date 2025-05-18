@@ -9,7 +9,7 @@ class ANDORGraphSearch:
         self.root = root
         self.root.title("AND-OR Search Puzzle Tree")
         self.root.geometry("1400x900")
-        self.root.configure(bg='#FFF8F8')  # Màu nền đồng bộ với Puzzle
+        self.root.configure(bg='#FFF8F8') 
         self.stop_flag = False
         self.solution_found = False
         self.start_time = 0
@@ -22,15 +22,10 @@ class ANDORGraphSearch:
         self.path = []
         self.return_to_menu_callback = return_to_menu_callback
 
-        # Main frame
         self.main_frame = tk.Frame(root, bg='#FFF8F8')
         self.main_frame.pack(fill='both', expand=True)
-
-        # Top frame for current and goal states
         self.top_frame = tk.Frame(self.main_frame, bg='#FFF8F8')
         self.top_frame.pack(fill='x', pady=10)
-
-        # Current state frame
         self.frame_curr = tk.LabelFrame(self.top_frame, text="Current State", 
                                       font=('Arial', 12, 'bold'), bg='#FFF8F8')
         self.frame_curr.pack(side='left', padx=20)
@@ -41,7 +36,6 @@ class ANDORGraphSearch:
             btn.grid(row=i//3, column=i%3, padx=5, pady=5)
             self.curr_buttons.append(btn)
 
-        # Goal state frame
         self.frame_goal = tk.LabelFrame(self.top_frame, text="Goal State", 
                                       font=('Arial', 12, 'bold'), bg='#FFF8F8')
         self.frame_goal.pack(side='left', padx=20)
@@ -49,12 +43,9 @@ class ANDORGraphSearch:
             lbl = tk.Label(self.frame_goal, text=str(val) if val != 0 else ' ', width=4, height=2,
                          font=('Arial', 16), relief='solid', bg='#e0e0e0')
             lbl.grid(row=i//3, column=i%3, padx=5, pady=5)
-
-        # Control frame
         self.ctrl_frame = tk.Frame(self.main_frame, bg='#FFF8F8')
         self.ctrl_frame.pack(fill='x', pady=10)
         
-        # Các nút điều khiển với màu sắc đồng bộ
         tk.Button(self.ctrl_frame, text="Random Puzzle", command=self.random_puzzle, 
                  font=('Arial', 12), bg='#FFB6C1', relief=tk.RAISED).pack(side='left', padx=10)
         tk.Button(self.ctrl_frame, text="Build Tree", command=self.start, 
@@ -63,13 +54,10 @@ class ANDORGraphSearch:
                  font=('Arial', 12), bg='#FFB6C1', relief=tk.RAISED).pack(side='left', padx=10)
         tk.Button(self.ctrl_frame, text="Exit", command=root.destroy, 
                  font=('Arial', 12), bg='#FF9999', relief=tk.RAISED).pack(side='left', padx=10)
-
-        # Search tree frame
         self.frame_tree = tk.LabelFrame(self.main_frame, text="Search Tree", 
                                       font=('Arial', 12, 'bold'), bg='#FFF8F8')
         self.frame_tree.pack(fill='both', expand=True, pady=10)
 
-        # Canvas with scrollbars
         self.canvas_frame = tk.Frame(self.frame_tree)
         self.canvas_frame.pack(fill='both', expand=True)
 
@@ -84,7 +72,6 @@ class ANDORGraphSearch:
         self.h_scroll.pack(side='bottom', fill='x')
         self.canvas.configure(xscrollcommand=self.h_scroll.set)
 
-        # Status labels
         self.status_label = tk.Label(self.main_frame, text="Idle", font=('Arial', 12), bg='#FFF8F8')
         self.status_label.pack(pady=5)
         self.time_label = tk.Label(self.main_frame, text="Time: Not started", 
@@ -104,11 +91,11 @@ class ANDORGraphSearch:
             self.node_id += 1
             cell_size = 30
             padding = 5
-            fill_color = '#FFD1DC'  # Màu hồng nhạt đồng bộ
+            fill_color = '#FFD1DC' 
             if is_goal:
-                fill_color = '#FF9999'  # Màu hồng đậm cho goal
+                fill_color = '#FF9999'
             elif is_current:
-                fill_color = '#FFB6C1'  # Màu trung bình cho current
+                fill_color = '#FFB6C1' 
             
             grid = self.canvas.create_rectangle(x - cell_size * 1.5 - padding, y - cell_size * 1.5 - padding,
                                              x + cell_size * 1.5 + padding, y + cell_size * 1.5 + padding,
@@ -141,8 +128,8 @@ class ANDORGraphSearch:
 
     def exit_to_menu(self):
         if self.return_to_menu_callback:
-            self.main_frame.pack_forget()  # Hide current UI
-            self.return_to_menu_callback()  # Call the menu callback
+            self.main_frame.pack_forget()  
+            self.return_to_menu_callback() 
         else:
             self.root.destroy()
 
@@ -159,9 +146,9 @@ class ANDORGraphSearch:
             padding = 5
             fill_color = 'lightgreen'
             if is_goal:
-                fill_color = '#ffcccc'  # Light red for goal
+                fill_color = '#ffcccc' 
             elif is_current:
-                fill_color = '#ccffcc'  # Light green for current
+                fill_color = '#ccffcc' 
             
             grid = self.canvas.create_rectangle(x - cell_size * 1.5 - padding, y - cell_size * 1.5 - padding,
                                              x + cell_size * 1.5 + padding, y + cell_size * 1.5 + padding,
@@ -261,7 +248,7 @@ class ANDORGraphSearch:
             self.visited.add(state_str)
             self.update_current(state)
             self.status_label.config(text=f"Exploring state: {state}")
-            time.sleep(0.5)  # Reduced sleep time for better responsiveness
+            time.sleep(0.5)  
 
             successors = self.get_successors(state)
             if not successors:
@@ -269,7 +256,7 @@ class ANDORGraphSearch:
 
             for next_state in successors:
                 self.depth = depth + 1
-                x_pos = 600 + ((self.node_id % 10) - 5) * 150  # Better node distribution
+                x_pos = 600 + ((self.node_id % 10) - 5) * 150  
                 y_pos = 50 + self.depth * 100
                 self.draw_puzzle_grid(next_state, x_pos, y_pos)
                 
@@ -285,7 +272,7 @@ class ANDORGraphSearch:
         if success:
             self.status_label.config(text=f"Goal found in {len(self.path)} steps!")
             self.time_label.config(text=f"Solution found in {elapsed:.2f} seconds", fg='green')
-            # Highlight solution path
+
             for i, state in enumerate(self.path):
                 x, y = self.node_positions[str(state)][1], self.node_positions[str(state)][2]
                 self.canvas.create_oval(x-20, y-20, x+20, y+20, outline='blue', width=3)
@@ -293,4 +280,3 @@ class ANDORGraphSearch:
             self.status_label.config(text="No solution found")
             self.time_label.config(text=f"Search completed in {elapsed:.2f} seconds (no solution)", fg='red')
 
-# Example of how to use this class with a menu callback
