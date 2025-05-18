@@ -332,17 +332,18 @@ cd TTNT
 
 ## 🧷 PROJECT STRUCTURE
 
-TTNT/
-├── assets/              # gifs & hình minh hoạ
-├── ac3Search.py         # AC-3 algorithm
-├── backtracking.py      # Backtracking CSP
-├── andor.py             # AND-OR graph search
-├── partialObs.py        # Partially observable search
-├── noObs.py             # Non‑observable search
-├── algorithm.py         # Hàm mở rộng chung, priority queues…
-├── puzzlebasic.py       # Lớp Puzzle
-├── main.py              # CLI entrypoint
-└── requirements.txt     # Dependencies
+<pre> ```bash 
+TTNT/ 
+├── assets/ # gifs & hình minh hoạ 
+├── ac3Search.py # AC-3 algorithm 
+├── backtracking.py # Backtracking CSP 
+├── andor.py # AND-OR graph search 
+├── partialObs.py # Partially observable search 
+├── noObs.py # Non-observable search 
+├── algorithm.py # Hàm mở rộng chung, priority queues… 
+├── puzzlebasic.py # Lớp Puzzle 
+├── main.py # CLI entrypoint 
+└── requirements.txt # Dependencies ``` </pre>
 
 
 
