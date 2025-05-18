@@ -332,7 +332,7 @@ cd TTNT
 
 ## 🧷 PROJECT STRUCTURE
 
-<pre> ```bash 
+<pre>
 TTNT/ 
 ├── assets/ # gifs & hình minh hoạ 
 ├── ac3Search.py # AC-3 algorithm 
@@ -343,7 +343,7 @@ TTNT/
 ├── algorithm.py # Hàm mở rộng chung, priority queues… 
 ├── puzzlebasic.py # Lớp Puzzle 
 ├── main.py # CLI entrypoint 
-└── requirements.txt # Dependencies ``` </pre>
+└── requirements.txt # Dependencies</pre>
 
 
 
